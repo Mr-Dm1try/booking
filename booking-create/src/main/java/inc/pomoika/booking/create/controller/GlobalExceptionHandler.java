@@ -3,6 +3,7 @@ package inc.pomoika.booking.create.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import inc.pomoika.booking.common.exception.BookingBlockException;
 import inc.pomoika.booking.common.exception.BookingOverlapException;
@@ -17,8 +18,20 @@ import lombok.extern.slf4j.Slf4j;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+        log.warn("Validation error", e);
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(error -> error.getDefaultMessage())
+                .orElse("Invalid request content");
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.validationError(message));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.warn("Validation error", e);
         return ResponseEntity.badRequest()
                 .body(ErrorResponse.validationError(e.getMessage()));
     }

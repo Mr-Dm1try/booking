@@ -4,6 +4,8 @@ import inc.pomoika.booking.create.service.BookingService;
 import inc.pomoika.booking.create.model.dto.BookingCreationRequest;
 import inc.pomoika.booking.create.model.dto.BookingCreationResponse;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +23,6 @@ public class BookingCreateController {
 
     @PostMapping
     public ResponseEntity<BookingCreationResponse> createBooking(@Valid @RequestBody BookingCreationRequest request) {
-        return ResponseEntity.ok(bookingService.createBooking(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBooking(request));
     }
 } 

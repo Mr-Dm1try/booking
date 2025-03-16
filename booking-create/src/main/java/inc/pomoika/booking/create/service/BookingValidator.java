@@ -20,7 +20,6 @@ public class BookingValidator {
     private final BlockRepository blockRepository;
 
     public void validateBooking(Booking booking) {
-
         List<Booking> overlappingBookings = bookingRepository.findOverlapping(
                 booking.getPropertyId(),
                 booking.getStartDate(),
@@ -35,6 +34,7 @@ public class BookingValidator {
             );
         }
 
+        // There could be call to another service to check if the property is blocked
         List<Block> overlappingBlocks = blockRepository.findOverlapping(
                 booking.getPropertyId(),
                 booking.getStartDate(),

@@ -14,7 +14,7 @@ import java.lang.annotation.RetentionPolicy;
 @Constraint(validatedBy = DateRangeValidator.class)
 @Documented
 public @interface ValidDateRange {
-    String message() default "Invalid date range: end date must be after start date";
+    String message() default "End date must be after start date";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 } 

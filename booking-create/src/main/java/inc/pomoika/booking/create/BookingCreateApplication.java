@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = {"inc.pomoika.booking"})
-@EntityScan(basePackages = {"inc.pomoika.booking.model"})
+@EntityScan(basePackages = {"inc.pomoika.booking.common.model"})
 @EnableJpaRepositories
 public class BookingCreateApplication {
     public static void main(String[] args) {
