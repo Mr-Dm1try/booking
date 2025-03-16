@@ -5,47 +5,62 @@ import inc.pomoika.booking.common.exception.BookingOverlapException;
 import inc.pomoika.booking.common.model.Block;
 import inc.pomoika.booking.common.model.Booking;
 import inc.pomoika.booking.common.model.BookingStatus;
+import inc.pomoika.booking.common.model.dto.DateRange;
 import inc.pomoika.booking.create.repository.BlockRepository;
 import inc.pomoika.booking.create.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
 
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class BookingValidator {
+
     private final BookingRepository bookingRepository;
     private final BlockRepository blockRepository;
 
-    public void validateBooking(Booking booking) {
-        List<Booking> overlappingBookings = bookingRepository.findOverlapping(
-                booking.getPropertyId(),
-                booking.getStartDate(),
-                booking.getEndDate(),
-                BookingStatus.CONFIRMED
-        );
-        
-        if (!overlappingBookings.isEmpty()) {
-            throw new BookingOverlapException(
-                "The property is already booked for the selected dates", 
-                overlappingBookings.stream().map(Booking::getId).toList()
-            );
-        }
+    public void validateBooking(long propertyId, DateRange dateRange) {
+        validateNoOverlappingBookings(propertyId, dateRange, null);
+        validateNoOverlappingBlocks(propertyId, dateRange);
+    }
 
-        // There could be call to another service to check if the property is blocked
-        List<Block> overlappingBlocks = blockRepository.findOverlapping(
-                booking.getPropertyId(),
-                booking.getStartDate(),
-                booking.getEndDate()
+    public void validateBookingUpdate(long propertyId, DateRange dateRange, Long excludeBookingId) {
+        validateNoOverlappingBookings(propertyId, dateRange, excludeBookingId);
+        validateNoOverlappingBlocks(propertyId, dateRange);
+    }
+
+    private void validateNoOverlappingBookings(long propertyId, DateRange dateRange, Long excludeBookingId) {
+        List<Booking> overlappingBookings = bookingRepository.findOverlappingBookings(
+                propertyId,
+                BookingStatus.CONFIRMED,
+                dateRange.getStartDate(),
+                dateRange.getEndDate(),
+                excludeBookingId
         );
-        
+
+        if (!overlappingBookings.isEmpty()) {
+            List<Long> overlappingIds = overlappingBookings.stream()
+                    .map(Booking::getId)
+                    .toList();
+            throw new BookingOverlapException("The property is already booked for the selected dates", overlappingIds);
+        }
+    }
+
+    private void validateNoOverlappingBlocks(long propertyId, DateRange dateRange) {
+        List<Block> overlappingBlocks = blockRepository.findOverlappingBlocks(
+                propertyId,
+                dateRange.getStartDate(),
+                dateRange.getEndDate()
+        );
+
         if (!overlappingBlocks.isEmpty()) {
-            throw new BookingBlockException(
-                "The property is blocked for the selected dates", 
-                overlappingBlocks.stream().map(Block::getId).toList()
-            );
+            List<Long> overlappingIds = overlappingBlocks.stream()
+                    .map(Block::getId)
+                    .toList();
+            throw new BookingBlockException("The property is blocked for the selected dates", overlappingIds);
         }
     }
 } 

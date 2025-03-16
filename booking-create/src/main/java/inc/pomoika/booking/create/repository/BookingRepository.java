@@ -13,14 +13,17 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     
-    @Query("SELECT b FROM Booking b WHERE " +
-           "b.status = :status AND " +
-           "b.propertyId = :propertyId AND " +
-           "((b.startDate <= :endDate AND b.endDate >= :startDate))")
-    List<Booking> findOverlapping(
+    @Query("""
+        SELECT b FROM Booking b 
+        WHERE b.status = :status AND b.propertyId = :propertyId 
+            AND (:excludeBookingId IS NULL OR b.id != :excludeBookingId) 
+            AND ((b.startDate <= :endDate AND b.endDate >= :startDate))
+    """)
+    List<Booking> findOverlappingBookings(
             @Param("propertyId") long propertyId,
+            @Param("status") BookingStatus status,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
-            @Param("status") BookingStatus status
+            @Param("excludeBookingId") Long excludeBookingId
     );
 } 

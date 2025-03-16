@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Value;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -38,4 +37,10 @@ public class ErrorResponse {
                 .params(Map.of("ids", bookingIds))
                 .build();
     }
+
+    public static ErrorResponse notFound(String message) {
+        return ErrorResponse.builder()
+                .message(message)
+                .code(ErrorCode.NOT_FOUND.name())
+                .build();
 } 

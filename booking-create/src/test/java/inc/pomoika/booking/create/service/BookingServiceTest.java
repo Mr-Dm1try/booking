@@ -6,7 +6,7 @@ import inc.pomoika.booking.common.model.Booking;
 import inc.pomoika.booking.common.model.BookingStatus;
 import inc.pomoika.booking.common.model.dto.DateRange;
 import inc.pomoika.booking.create.model.dto.BookingCreationRequest;
-import inc.pomoika.booking.create.model.dto.BookingCreationResponse;
+import inc.pomoika.booking.create.model.dto.BookingResponse;
 import inc.pomoika.booking.create.repository.BlockRepository;
 import inc.pomoika.booking.create.repository.BookingRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +71,7 @@ class BookingServiceTest {
         doNothing().when(bookingValidator).validateBooking(any(Booking.class));
 
         // When
-        BookingCreationResponse response = bookingService.createBooking(request);
+        BookingResponse response = bookingService.createBooking(request);
 
         // Then
         assertThat(response)

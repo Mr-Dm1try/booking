@@ -1,8 +1,6 @@
 package inc.pomoika.booking.create.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import inc.pomoika.booking.common.exception.BookingBlockException;
-import inc.pomoika.booking.common.exception.BookingOverlapException;
 import inc.pomoika.booking.common.model.Block;
 import inc.pomoika.booking.common.model.Booking;
 import inc.pomoika.booking.common.model.BookingStatus;

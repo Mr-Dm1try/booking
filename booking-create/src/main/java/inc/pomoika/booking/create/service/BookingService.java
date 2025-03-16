@@ -1,11 +1,13 @@
 package inc.pomoika.booking.create.service;
 
-import inc.pomoika.booking.create.repository.BookingRepository;
+import inc.pomoika.booking.common.exception.BookingNotFoundException;
 import inc.pomoika.booking.common.model.Booking;
 import inc.pomoika.booking.common.model.BookingStatus;
 import inc.pomoika.booking.common.model.dto.DateRange;
 import inc.pomoika.booking.create.model.dto.BookingCreationRequest;
-import inc.pomoika.booking.create.model.dto.BookingCreationResponse;
+import inc.pomoika.booking.create.model.dto.BookingResponse;
+import inc.pomoika.booking.create.model.dto.BookingUpdateRequest;
+import inc.pomoika.booking.create.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +20,25 @@ public class BookingService {
     private final BookingValidator bookingValidator;
 
     @Transactional
-    public BookingCreationResponse createBooking(BookingCreationRequest request) {
+    public BookingResponse createBooking(BookingCreationRequest request) {
+        bookingValidator.validateBooking(request.getPropertyId(), request.getDateRange());
         Booking booking = toEntity(request);
-        bookingValidator.validateBooking(booking);
-        Booking savedBooking = bookingRepository.save(booking);
-        return toResponse(savedBooking);
+        booking = bookingRepository.save(booking);
+        return toResponse(booking);
     }
 
-    private static Booking toEntity(BookingCreationRequest request) {
+    @Transactional
+    public BookingResponse updateBooking(Long bookingId, BookingUpdateRequest request) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        bookingValidator.validateBookingUpdate(booking.getPropertyId(), request.getDateRange(), bookingId);
+        updateEntity(booking, request);
+        booking = bookingRepository.save(booking);
+        return toResponse(booking);
+    }
+
+    private Booking toEntity(BookingCreationRequest request) {
         return new Booking()
                 .setPropertyId(request.getPropertyId())
                 .setGuestId(request.getGuestId())
@@ -34,15 +47,19 @@ public class BookingService {
                 .setStatus(BookingStatus.CONFIRMED);
     }
 
-    private static BookingCreationResponse toResponse(Booking booking) {
-        return BookingCreationResponse.builder()
-                .id(booking.getId())
-                .propertyId(booking.getPropertyId())
-                .guestId(booking.getGuestId())
-                .dateRange(new DateRange(booking.getStartDate(), booking.getEndDate()))
-                .status(booking.getStatus())
-                .createdAt(booking.getCreatedAt())
-                .updatedAt(booking.getUpdatedAt())
-                .build();
+    private void updateEntity(Booking booking, BookingUpdateRequest request) {
+        booking.setGuestId(request.getGuestId())
+                .setStartDate(request.getDateRange().getStartDate())
+                .setEndDate(request.getDateRange().getEndDate());
+    }
+
+    private BookingResponse toResponse(Booking booking) {
+        return new BookingResponse(
+                booking.getId(),
+                booking.getPropertyId(),
+                booking.getGuestId(),
+                new DateRange(booking.getStartDate(), booking.getEndDate()),
+                booking.getStatus()
+        );
     }
 } 

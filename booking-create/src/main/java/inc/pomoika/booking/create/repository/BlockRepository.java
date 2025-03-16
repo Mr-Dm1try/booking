@@ -12,10 +12,9 @@ import java.util.List;
 @Repository
 public interface BlockRepository extends JpaRepository<Block, Long> {
     
-    @Query("SELECT b FROM Block b WHERE " +
-           "b.propertyId = :propertyId AND " +
-           "((b.startDate <= :endDate AND b.endDate >= :startDate))")
-    List<Block> findOverlapping(
+    @Query("SELECT b FROM Block b WHERE b.propertyId = :propertyId " +
+            "AND ((b.startDate <= :endDate AND b.endDate >= :startDate))")
+    List<Block> findOverlappingBlocks(
             @Param("propertyId") long propertyId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate

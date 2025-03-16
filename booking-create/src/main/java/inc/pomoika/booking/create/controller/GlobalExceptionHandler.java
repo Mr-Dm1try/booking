@@ -1,16 +1,15 @@
 package inc.pomoika.booking.create.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import inc.pomoika.booking.common.exception.BookingBlockException;
+import inc.pomoika.booking.common.exception.BookingNotFoundException;
 import inc.pomoika.booking.common.exception.BookingOverlapException;
 import inc.pomoika.booking.common.model.dto.ErrorResponse;
-
-import java.util.List;
-import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,5 +47,12 @@ public class GlobalExceptionHandler {
         log.warn("Booking overlap with blocks [{}] detected", e.getBlockIds(), e);
         return ResponseEntity.badRequest()
                 .body(ErrorResponse.ofBlocks(e.getMessage(), e.getBlockIds()));
+    }
+
+    @ExceptionHandler(BookingNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBookingNotFoundException(BookingNotFoundException e) {
+        log.warn("Booking not found", e);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.notFound(e.getMessage()));
     }
 } 
