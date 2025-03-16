@@ -1,4 +1,4 @@
-package inc.pomoika.booking.create.repository;
+package inc.pomoika.booking.common.repository;
 
 import inc.pomoika.booking.common.model.PropertyLock;
 import jakarta.persistence.LockModeType;
@@ -14,4 +14,4 @@ public interface PropertyLockRepository extends JpaRepository<PropertyLock, Long
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT l FROM PropertyLock l WHERE l.propertyId = :propertyId")
     PropertyLock findByPropertyIdForUpdate(@Param("propertyId") long propertyId);
-} 
+}  

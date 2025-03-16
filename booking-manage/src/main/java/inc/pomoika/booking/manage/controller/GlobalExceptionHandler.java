@@ -1,4 +1,4 @@
-package inc.pomoika.booking.create.controller;
+package inc.pomoika.booking.manage.controller;
 
 import org.springframework.web.bind.annotation.ControllerAdvice;
 

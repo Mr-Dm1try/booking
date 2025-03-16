@@ -1,17 +1,19 @@
 package inc.pomoika.booking.create.service;
 
-import inc.pomoika.booking.common.exception.IllegalBookingStatusException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import inc.pomoika.booking.common.exception.BookingNotFoundException;
+import inc.pomoika.booking.common.exception.IllegalBookingStatusException;
 import inc.pomoika.booking.common.model.Booking;
 import inc.pomoika.booking.common.model.BookingStatus;
 import inc.pomoika.booking.common.model.dto.DateRange;
+import inc.pomoika.booking.common.service.PropertyLockService;
 import inc.pomoika.booking.create.model.dto.BookingCreationRequest;
 import inc.pomoika.booking.create.model.dto.BookingResponse;
 import inc.pomoika.booking.create.model.dto.BookingUpdateRequest;
 import inc.pomoika.booking.create.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
