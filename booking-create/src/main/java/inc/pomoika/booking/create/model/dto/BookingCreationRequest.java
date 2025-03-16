@@ -1,13 +1,13 @@
 package inc.pomoika.booking.create.model.dto;
 
-import jakarta.validation.constraints.Future;
+import inc.pomoika.booking.common.model.dto.DateRange;
+import inc.pomoika.booking.common.validation.ValidDateRange;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
 
 @Data
 @Builder
@@ -15,16 +15,14 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class BookingCreationRequest {
     @NotNull(message = "Property ID is required")
+    @Positive(message = "Property ID must be positive")
     private long propertyId;
 
     @NotNull(message = "Guest ID is required")
+    @Positive(message = "Guest ID must be positive")
     private long guestId;
 
-    @NotNull(message = "Start date is required")
-    @Future(message = "Start date must be in the future")
-    private LocalDate startDate;
-
-    @NotNull(message = "End date is required")
-    @Future(message = "End date must be in the future")
-    private LocalDate endDate;
+    @NotNull(message = "Date range is required")
+    @ValidDateRange
+    private DateRange dateRange;
 } 
