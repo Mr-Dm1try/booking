@@ -2,15 +2,14 @@ package inc.pomoika.booking.create.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import inc.pomoika.booking.common.exception.BookingBlockException;
 import inc.pomoika.booking.common.exception.BookingNotFoundException;
 import inc.pomoika.booking.common.exception.BookingOverlapException;
 import inc.pomoika.booking.common.model.dto.ErrorResponse;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -54,5 +53,12 @@ public class GlobalExceptionHandler {
         log.warn("Booking not found", e);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponse.notFound(e.getMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.error("Unexpected error", e);
+        return ResponseEntity.internalServerError()
+                .body(ErrorResponse.of("An unexpected error occurred"));
     }
 } 

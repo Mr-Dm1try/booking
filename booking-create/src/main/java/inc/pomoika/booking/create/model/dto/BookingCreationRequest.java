@@ -16,11 +16,11 @@ import lombok.NoArgsConstructor;
 public class BookingCreationRequest {
     @NotNull(message = "Property ID is required")
     @Positive(message = "Property ID must be positive")
-    private long propertyId;
+    private Long propertyId;
 
     @NotNull(message = "Guest ID is required")
     @Positive(message = "Guest ID must be positive")
-    private long guestId;
+    private Long guestId;
 
     @NotNull(message = "Date range is required")
     @ValidDateRange

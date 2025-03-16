@@ -43,4 +43,12 @@ public class ErrorResponse {
                 .message(message)
                 .code(ErrorCode.NOT_FOUND.name())
                 .build();
+    }
+
+    public static ErrorResponse of(String message) {
+        return ErrorResponse.builder()
+                .message(message)
+                .code(ErrorCode.INTERNAL_SERVER_ERROR.name())
+                .build();
+    }
 } 

@@ -2,19 +2,19 @@ package inc.pomoika.booking.create.model.dto;
 
 import inc.pomoika.booking.common.model.dto.DateRange;
 import inc.pomoika.booking.common.validation.ValidDateRange;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 @Builder
 public class BookingUpdateRequest {
     @NotNull
-    @Positive
-    long guestId;
+    private Long guestId;
 
     @NotNull
+    @Valid
     @ValidDateRange
-    DateRange dateRange;
+    private DateRange dateRange;
 } 

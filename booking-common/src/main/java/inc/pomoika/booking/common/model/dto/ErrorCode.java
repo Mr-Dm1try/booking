@@ -4,5 +4,6 @@ public enum ErrorCode {
     BOOKING_OVERLAP,
     BLOCK_OVERLAP,
     VALIDATION_ERROR,   
-    NOT_FOUND
+    NOT_FOUND,
+    INTERNAL_SERVER_ERROR
 }

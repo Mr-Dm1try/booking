@@ -1,13 +1,12 @@
 package inc.pomoika.booking.create.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import inc.pomoika.booking.common.model.Block;
-import inc.pomoika.booking.common.model.Booking;
-import inc.pomoika.booking.common.model.BookingStatus;
-import inc.pomoika.booking.common.model.dto.DateRange;
-import inc.pomoika.booking.create.model.dto.BookingCreationRequest;
-import inc.pomoika.booking.create.repository.BlockRepository;
-import inc.pomoika.booking.create.repository.BookingRepository;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +17,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import inc.pomoika.booking.common.model.Block;
+import inc.pomoika.booking.common.model.Booking;
+import inc.pomoika.booking.common.model.BookingStatus;
+import inc.pomoika.booking.common.model.dto.DateRange;
+import inc.pomoika.booking.create.model.dto.BookingCreationRequest;
+import inc.pomoika.booking.create.model.dto.BookingUpdateRequest;
+import inc.pomoika.booking.create.repository.BlockRepository;
+import inc.pomoika.booking.create.repository.BookingRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -44,6 +48,7 @@ class BookingControllerTest {
 
     private static final long PROPERTY_ID = 1L;
     private static final long GUEST_ID = 2L;
+    private static final long NEW_GUEST_ID = 3L;
 
     @BeforeEach
     void setUp() {
@@ -76,6 +81,151 @@ class BookingControllerTest {
     }
 
     @Test
+    void updateBooking_Success() throws Exception {
+        // Given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(3);
+        LocalDate newStartDate = LocalDate.now().plusDays(4);
+        LocalDate newEndDate = LocalDate.now().plusDays(6);
+        
+        Booking existingBooking = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CONFIRMED);
+        existingBooking = bookingRepository.save(existingBooking);
+
+        BookingUpdateRequest request = BookingUpdateRequest.builder()
+                .guestId(NEW_GUEST_ID)
+                .dateRange(new DateRange(newStartDate, newEndDate))
+                .build();
+
+        // When/Then
+        mockMvc.perform(put("/api/v1/bookings/{id}", existingBooking.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(existingBooking.getId()))
+                .andExpect(jsonPath("$.propertyId").value(PROPERTY_ID))
+                .andExpect(jsonPath("$.guestId").value(NEW_GUEST_ID))
+                .andExpect(jsonPath("$.dateRange.startDate").value(newStartDate.toString()))
+                .andExpect(jsonPath("$.dateRange.endDate").value(newEndDate.toString()))
+                .andExpect(jsonPath("$.status").value(BookingStatus.CONFIRMED.name()));
+    }
+
+    @Test
+    void updateBooking_WhenOverlappingBooking_ReturnsBadRequest() throws Exception {
+        // Given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(3);
+        LocalDate overlappingStartDate = LocalDate.now().plusDays(2);
+        LocalDate overlappingEndDate = LocalDate.now().plusDays(4);
+        
+        // Create booking to update
+        Booking bookingToUpdate = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CONFIRMED);
+        bookingToUpdate = bookingRepository.save(bookingToUpdate);
+
+        // Create overlapping booking
+        Booking overlappingBooking = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(NEW_GUEST_ID)
+                .setStartDate(overlappingStartDate)
+                .setEndDate(overlappingEndDate)
+                .setStatus(BookingStatus.CONFIRMED);
+        overlappingBooking = bookingRepository.save(overlappingBooking);
+
+        BookingUpdateRequest request = BookingUpdateRequest.builder()
+                .guestId(NEW_GUEST_ID)
+                .dateRange(new DateRange(overlappingStartDate, overlappingEndDate))
+                .build();
+
+        // When/Then
+        mockMvc.perform(put("/api/v1/bookings/{id}", bookingToUpdate.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("The property is already booked for the selected dates"))
+                .andExpect(jsonPath("$.code").value("BOOKING_OVERLAP"))
+                .andExpect(jsonPath("$.params.ids[0]").value(overlappingBooking.getId()));
+    }
+
+    @Test
+    void updateBooking_WhenBlockExists_ReturnsBadRequest() throws Exception {
+        // Given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(3);
+        LocalDate blockedStartDate = LocalDate.now().plusDays(4);
+        LocalDate blockedEndDate = LocalDate.now().plusDays(6);
+        
+        // Create booking to update
+        Booking bookingToUpdate = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CONFIRMED);
+        bookingToUpdate = bookingRepository.save(bookingToUpdate);
+
+        // Create block
+        Block block = new Block()
+                .setPropertyId(PROPERTY_ID)
+                .setStartDate(blockedStartDate)
+                .setEndDate(blockedEndDate);
+        block = blockRepository.save(block);
+
+        BookingUpdateRequest request = BookingUpdateRequest.builder()
+                .guestId(NEW_GUEST_ID)
+                .dateRange(new DateRange(blockedStartDate, blockedEndDate))
+                .build();
+
+        // When/Then
+        mockMvc.perform(put("/api/v1/bookings/{id}", bookingToUpdate.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("The property is blocked for the selected dates"))
+                .andExpect(jsonPath("$.code").value("BLOCK_OVERLAP"))
+                .andExpect(jsonPath("$.params.ids[0]").value(block.getId()));
+    }
+
+    @Test
+    void updateBooking_WhenInvalidDateRange_ReturnsBadRequest() throws Exception {
+        // Given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(3);
+        LocalDate invalidStartDate = LocalDate.now().plusDays(4);
+        LocalDate invalidEndDate = LocalDate.now().plusDays(2); // End date before start date
+        
+        // Create booking to update
+        Booking bookingToUpdate = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CONFIRMED);
+        bookingToUpdate = bookingRepository.save(bookingToUpdate);
+
+        BookingUpdateRequest request = BookingUpdateRequest.builder()
+                .guestId(NEW_GUEST_ID)
+                .dateRange(new DateRange(invalidStartDate, invalidEndDate))
+                .build();
+
+        // When/Then
+        mockMvc.perform(put("/api/v1/bookings/{id}", bookingToUpdate.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("End date must be after start date"))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
     void createBooking_WhenOverlappingBooking_ReturnsBadRequest() throws Exception {
         // Given
         LocalDate startDate = LocalDate.now().plusDays(1);
@@ -84,7 +234,7 @@ class BookingControllerTest {
         // Create an existing booking
         Booking existingBooking = new Booking()
                 .setPropertyId(PROPERTY_ID)
-                .setGuestId(3L)
+                .setGuestId(NEW_GUEST_ID)
                 .setStartDate(startDate)
                 .setEndDate(endDate)
                 .setStatus(BookingStatus.CONFIRMED);
@@ -139,7 +289,7 @@ class BookingControllerTest {
     void createBooking_WhenInvalidDateRange_ReturnsBadRequest() throws Exception {
         // Given
         LocalDate startDate = LocalDate.now().plusDays(1);
-        LocalDate endDate = startDate.minusDays(1);
+        LocalDate endDate = startDate.minusDays(1); // End date before start date
         
         BookingCreationRequest request = BookingCreationRequest.builder()
                 .propertyId(PROPERTY_ID)
