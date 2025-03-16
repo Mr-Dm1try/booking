@@ -1,7 +1,8 @@
 package inc.pomoika.booking.create.service;
 
 import inc.pomoika.booking.common.model.PropertyLock;
-import inc.pomoika.booking.create.repository.PropertyLockRepository;
+import inc.pomoika.booking.common.repository.PropertyLockRepository;
+import inc.pomoika.booking.common.service.PropertyLockService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

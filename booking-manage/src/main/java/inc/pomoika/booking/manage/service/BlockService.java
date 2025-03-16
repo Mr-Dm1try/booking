@@ -36,7 +36,7 @@ public class BlockService {
                 .setStartDate(request.getDateRange().getStartDate())
                 .setEndDate(request.getDateRange().getEndDate());
 
-        return BlockResponse.of(blockRepository.save(block));
+        return BlockResponse.from(blockRepository.save(block));
     }
 
     @Transactional
@@ -52,7 +52,7 @@ public class BlockService {
         block.setStartDate(request.getDateRange().getStartDate())
             .setEndDate(request.getDateRange().getEndDate());
 
-        return BlockResponse.of(blockRepository.save(block));
+        return BlockResponse.from(blockRepository.save(block));
     }
 
     @Transactional

@@ -2,10 +2,10 @@ package inc.pomoika.booking.create.config;
 
 import inc.pomoika.booking.create.repository.BlockRepository;
 import inc.pomoika.booking.create.repository.BookingRepository;
-import inc.pomoika.booking.create.repository.PropertyLockRepository;
+import inc.pomoika.booking.common.repository.PropertyLockRepository;
+import inc.pomoika.booking.common.service.PropertyLockService;
 import inc.pomoika.booking.create.service.BookingService;
 import inc.pomoika.booking.create.service.BookingValidator;
-import inc.pomoika.booking.create.service.PropertyLockService;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -15,7 +15,10 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import javax.sql.DataSource;
 
 @TestConfiguration
-@EnableJpaRepositories(basePackages = "inc.pomoika.booking.create.repository")
+@EnableJpaRepositories(basePackages = {
+    "inc.pomoika.booking.create.repository",
+    "inc.pomoika.booking.common.repository"
+})
 public class IntegrationTestConfig {
 
     @Bean

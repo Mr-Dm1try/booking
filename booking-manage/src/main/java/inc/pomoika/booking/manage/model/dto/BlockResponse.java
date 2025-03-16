@@ -3,16 +3,16 @@ package inc.pomoika.booking.manage.model.dto;
 import inc.pomoika.booking.common.model.Block;
 import inc.pomoika.booking.common.model.dto.DateRange;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 @Builder
 public class BlockResponse {
-    long id;
-    long propertyId;
-    DateRange dateRange;
+    private Long id;
+    private Long propertyId;
+    private DateRange dateRange;
 
-    public static BlockResponse of(Block block) {
+    public static BlockResponse from(Block block) {
         return BlockResponse.builder()
                 .id(block.getId())
                 .propertyId(block.getPropertyId())
