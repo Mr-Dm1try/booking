@@ -17,7 +17,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         SELECT b FROM Booking b 
         WHERE b.status = :status AND b.propertyId = :propertyId 
             AND (:excludeBookingId IS NULL OR b.id != :excludeBookingId) 
-            AND ((b.startDate <= :endDate AND b.endDate >= :startDate))
+            AND (b.startDate <= :endDate AND b.endDate >= :startDate)
     """)
     List<Booking> findOverlappingBookings(
             @Param("propertyId") long propertyId,

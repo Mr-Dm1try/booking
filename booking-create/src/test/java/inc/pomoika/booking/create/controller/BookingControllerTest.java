@@ -321,7 +321,7 @@ class BookingControllerTest {
         existingBooking = bookingRepository.save(existingBooking);
 
         // When/Then
-        mockMvc.perform(post("/api/v1/bookings/{id}/cancel", existingBooking.getId())
+        mockMvc.perform(put("/api/v1/bookings/{id}/cancel", existingBooking.getId())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(existingBooking.getId()))
@@ -347,7 +347,7 @@ class BookingControllerTest {
         existingBooking = bookingRepository.save(existingBooking);
 
         // When/Then
-        mockMvc.perform(post("/api/v1/bookings/{id}/cancel", existingBooking.getId())
+        mockMvc.perform(put("/api/v1/bookings/{id}/cancel", existingBooking.getId())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(existingBooking.getId()))
@@ -368,9 +368,15 @@ class BookingControllerTest {
                 .setStatus(BookingStatus.CANCELLED);
         existingBooking = bookingRepository.save(existingBooking);
 
+        BookingUpdateRequest request = BookingUpdateRequest.builder()
+                .guestId(GUEST_ID)
+                .dateRange(new DateRange(startDate, endDate))
+                .build();
+
         // When/Then
-        mockMvc.perform(post("/api/v1/bookings/{id}/rebook", existingBooking.getId())
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(put("/api/v1/bookings/{id}/rebook", existingBooking.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(existingBooking.getId()))
                 .andExpect(jsonPath("$.propertyId").value(PROPERTY_ID))
@@ -383,23 +389,26 @@ class BookingControllerTest {
     @Test
     void rebookCancelledBooking_WhenNotCancelled_ReturnsBadRequest() throws Exception {
         // Given
-        LocalDate startDate = LocalDate.now().plusDays(1);
-        LocalDate endDate = LocalDate.now().plusDays(3);
-        
         Booking existingBooking = new Booking()
                 .setPropertyId(PROPERTY_ID)
                 .setGuestId(GUEST_ID)
-                .setStartDate(startDate)
-                .setEndDate(endDate)
+                .setStartDate(LocalDate.now().plusDays(1))
+                .setEndDate(LocalDate.now().plusDays(3))
                 .setStatus(BookingStatus.CONFIRMED);
         existingBooking = bookingRepository.save(existingBooking);
 
         // When/Then
-        mockMvc.perform(post("/api/v1/bookings/{id}/rebook", existingBooking.getId())
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(existingBooking.getId()))
-                .andExpect(jsonPath("$.status").value(BookingStatus.CONFIRMED.name()));
+        mockMvc.perform(put("/api/v1/bookings/{id}/rebook", existingBooking.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(BookingUpdateRequest.builder()
+                        .guestId(GUEST_ID)
+                        .dateRange(DateRange.builder()
+                                .startDate(LocalDate.now().plusDays(4))
+                                .endDate(LocalDate.now().plusDays(6))
+                                .build())
+                        .build())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Only cancelled bookings can be rebooked"));
     }
 
     @Test
@@ -426,9 +435,15 @@ class BookingControllerTest {
                 .setStatus(BookingStatus.CONFIRMED);
         overlappingBooking = bookingRepository.save(overlappingBooking);
 
+        BookingUpdateRequest request = BookingUpdateRequest.builder()
+                .guestId(GUEST_ID)
+                .dateRange(new DateRange(startDate, endDate))
+                .build();
+
         // When/Then
-        mockMvc.perform(post("/api/v1/bookings/{id}/rebook", cancelledBooking.getId())
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(put("/api/v1/bookings/{id}/rebook", cancelledBooking.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("The property is already booked for the selected dates"))
                 .andExpect(jsonPath("$.code").value("BOOKING_OVERLAP"))
@@ -462,7 +477,7 @@ class BookingControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Cannot update cancelled booking"))
-                .andExpect(jsonPath("$.code").value("CANCELLED_BOOKING"))
+                .andExpect(jsonPath("$.code").value("ILLEGAL_BOOKING_STATUS"))
                 .andExpect(jsonPath("$.params.id").value(cancelledBooking.getId()));
     }
 } 

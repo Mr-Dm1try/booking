@@ -32,6 +32,7 @@ import inc.pomoika.booking.create.model.dto.BookingResponse;
 import inc.pomoika.booking.create.model.dto.BookingUpdateRequest;
 import inc.pomoika.booking.create.repository.BlockRepository;
 import inc.pomoika.booking.create.repository.BookingRepository;
+import inc.pomoika.booking.create.service.PropertyLockService;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceTest {
@@ -44,6 +45,9 @@ class BookingServiceTest {
 
     @Mock
     private BookingValidator bookingValidator;
+
+    @Mock
+    private PropertyLockService propertyLockService;
 
     @InjectMocks
     private BookingService bookingService;

@@ -29,21 +29,26 @@ public class BookingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBooking(request));
     }
     
-    @PutMapping("/{id}")
+    @PutMapping("/{bookingId}")
     public ResponseEntity<BookingResponse> updateBooking(
-            @PathVariable("id") long id,
+            @PathVariable long bookingId,
             @Valid @RequestBody BookingUpdateRequest request
     ) {
-        return ResponseEntity.ok(bookingService.updateBooking(id, request));
+        return ResponseEntity.ok(bookingService.updateBooking(bookingId, request));
     }
 
-    @PostMapping("/{id}/cancel")
-    public ResponseEntity<BookingResponse> cancelBooking(@PathVariable("id") long id) {
-        return ResponseEntity.ok(bookingService.cancelBooking(id));
+    @PutMapping("/{bookingId}/cancel")
+    public ResponseEntity<BookingResponse> cancelBooking(
+            @PathVariable long bookingId
+    ) {
+        return ResponseEntity.ok(bookingService.cancelBooking(bookingId));
     }
 
-    @PostMapping("/{id}/rebook")
-    public ResponseEntity<BookingResponse> rebookCancelledBooking(@PathVariable("id") long id) {
-        return ResponseEntity.ok(bookingService.rebookCancelledBooking(id));
+    @PutMapping("/{bookingId}/rebook")
+    public ResponseEntity<BookingResponse> rebookCancelledBooking(
+            @PathVariable long bookingId,
+            @Valid @RequestBody BookingUpdateRequest request
+    ) {
+        return ResponseEntity.ok(bookingService.rebookCancelledBooking(bookingId, request));
     }
 } 

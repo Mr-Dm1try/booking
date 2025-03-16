@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import inc.pomoika.booking.common.exception.BookingBlockException;
-import inc.pomoika.booking.common.exception.BookingIsCancelledException;
+import inc.pomoika.booking.common.exception.BookingException;
+import inc.pomoika.booking.common.exception.IllegalBookingStatusException;
 import inc.pomoika.booking.common.exception.BookingNotFoundException;
 import inc.pomoika.booking.common.exception.BookingOverlapException;
 import inc.pomoika.booking.common.model.dto.ErrorResponse;
@@ -35,6 +36,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.validationError(e.getMessage()));
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException e) {
+        log.warn("Invalid state", e);
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.validationError(e.getMessage()));
+    }
+
     @ExceptionHandler(BookingOverlapException.class)
     public ResponseEntity<ErrorResponse> handleBookingOverlapException(BookingOverlapException e) {
         log.warn("Booking overlap with bookings [{}] detected", e.getBookingIds(), e);
@@ -56,11 +64,18 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.notFound(e.getMessage()));
     }
 
-    @ExceptionHandler(BookingIsCancelledException.class)
-    public ResponseEntity<ErrorResponse> handleBookingIsCancelledException(BookingIsCancelledException e) {
-        log.warn("Booking [{}] is cancelled", e.getBookingId(), e);
+    @ExceptionHandler(IllegalBookingStatusException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalBookingStatusException(IllegalBookingStatusException e) {
+        log.warn("Booking [{}] is in illegal status", e.getBookingId(), e);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.ofCancelledBooking(e.getMessage(), e.getBookingId()));
+                .body(ErrorResponse.ofIllegalBookingStatus(e.getMessage(), e.getBookingId(), e.getStatus()));
+    }
+
+    @ExceptionHandler(BookingException.class)
+    public ResponseEntity<ErrorResponse> handleBookingException(BookingException e) {
+        log.warn("Some internal error", e);
+        return ResponseEntity.internalServerError()
+                .body(ErrorResponse.of(e.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

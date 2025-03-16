@@ -38,11 +38,11 @@ public class ErrorResponse {
                 .build();
     }
 
-    public static ErrorResponse ofCancelledBooking(String message, long bookingId) {
+    public static ErrorResponse ofIllegalBookingStatus(String message, long bookingId, String status) {
         return ErrorResponse.builder()
                 .message(message)
-                .code(ErrorCode.CANCELLED_BOOKING.name())
-                .params(Map.of("id", bookingId))
+                .code(ErrorCode.ILLEGAL_BOOKING_STATUS.name())
+                .params(Map.of("id", bookingId, "status", status))
                 .build();
     }
 

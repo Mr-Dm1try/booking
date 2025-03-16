@@ -50,7 +50,7 @@ public class BookingValidator {
     }
 
     private void validateNoOverlappingBlocks(long propertyId, DateRange dateRange) {
-        List<Block> overlappingBlocks = blockRepository.findOverlappingBlocks(
+        List<Block> overlappingBlocks = blockRepository.findOverlapping(
                 propertyId,
                 dateRange.getStartDate(),
                 dateRange.getEndDate()
