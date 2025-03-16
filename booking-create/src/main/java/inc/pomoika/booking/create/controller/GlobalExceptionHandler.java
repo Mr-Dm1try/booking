@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import inc.pomoika.booking.common.exception.BookingBlockException;
+import inc.pomoika.booking.common.exception.BookingIsCancelledException;
 import inc.pomoika.booking.common.exception.BookingNotFoundException;
 import inc.pomoika.booking.common.exception.BookingOverlapException;
 import inc.pomoika.booking.common.model.dto.ErrorResponse;
@@ -53,6 +54,13 @@ public class GlobalExceptionHandler {
         log.warn("Booking not found", e);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponse.notFound(e.getMessage()));
+    }
+
+    @ExceptionHandler(BookingIsCancelledException.class)
+    public ResponseEntity<ErrorResponse> handleBookingIsCancelledException(BookingIsCancelledException e) {
+        log.warn("Booking [{}] is cancelled", e.getBookingId(), e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.ofCancelledBooking(e.getMessage(), e.getBookingId()));
     }
 
     @ExceptionHandler(Exception.class)

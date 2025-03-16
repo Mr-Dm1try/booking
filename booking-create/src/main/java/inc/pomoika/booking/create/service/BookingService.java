@@ -1,5 +1,6 @@
 package inc.pomoika.booking.create.service;
 
+import inc.pomoika.booking.common.exception.BookingIsCancelledException;
 import inc.pomoika.booking.common.exception.BookingNotFoundException;
 import inc.pomoika.booking.common.model.Booking;
 import inc.pomoika.booking.common.model.BookingStatus;
@@ -32,8 +33,41 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + bookingId));
 
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BookingIsCancelledException("Cannot update cancelled booking", bookingId);
+        }
+
         bookingValidator.validateBookingUpdate(booking.getPropertyId(), request.getDateRange(), bookingId);
         updateEntity(booking, request);
+        booking = bookingRepository.save(booking);
+        return toResponse(booking);
+    }
+
+    @Transactional
+    public BookingResponse cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            return toResponse(booking);
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        booking = bookingRepository.save(booking);
+        return toResponse(booking);
+    }
+
+    @Transactional
+    public BookingResponse rebookCancelledBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() != BookingStatus.CANCELLED) {
+            return toResponse(booking);
+        }
+
+        bookingValidator.validateBooking(booking.getPropertyId(), new DateRange(booking.getStartDate(), booking.getEndDate()));
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking = bookingRepository.save(booking);
         return toResponse(booking);
     }

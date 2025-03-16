@@ -38,6 +38,14 @@ public class ErrorResponse {
                 .build();
     }
 
+    public static ErrorResponse ofCancelledBooking(String message, long bookingId) {
+        return ErrorResponse.builder()
+                .message(message)
+                .code(ErrorCode.CANCELLED_BOOKING.name())
+                .params(Map.of("id", bookingId))
+                .build();
+    }
+
     public static ErrorResponse notFound(String message) {
         return ErrorResponse.builder()
                 .message(message)

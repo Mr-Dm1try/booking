@@ -305,4 +305,164 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.message").value("End date must be after start date"))
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
+
+    @Test
+    void cancelBooking_Success() throws Exception {
+        // Given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(3);
+        
+        Booking existingBooking = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CONFIRMED);
+        existingBooking = bookingRepository.save(existingBooking);
+
+        // When/Then
+        mockMvc.perform(post("/api/v1/bookings/{id}/cancel", existingBooking.getId())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(existingBooking.getId()))
+                .andExpect(jsonPath("$.propertyId").value(PROPERTY_ID))
+                .andExpect(jsonPath("$.guestId").value(GUEST_ID))
+                .andExpect(jsonPath("$.dateRange.startDate").value(startDate.toString()))
+                .andExpect(jsonPath("$.dateRange.endDate").value(endDate.toString()))
+                .andExpect(jsonPath("$.status").value(BookingStatus.CANCELLED.name()));
+    }
+
+    @Test
+    void cancelBooking_WhenAlreadyCancelled_ReturnsBadRequest() throws Exception {
+        // Given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(3);
+        
+        Booking existingBooking = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CANCELLED);
+        existingBooking = bookingRepository.save(existingBooking);
+
+        // When/Then
+        mockMvc.perform(post("/api/v1/bookings/{id}/cancel", existingBooking.getId())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(existingBooking.getId()))
+                .andExpect(jsonPath("$.status").value(BookingStatus.CANCELLED.name()));
+    }
+
+    @Test
+    void rebookCancelledBooking_Success() throws Exception {
+        // Given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(3);
+        
+        Booking existingBooking = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CANCELLED);
+        existingBooking = bookingRepository.save(existingBooking);
+
+        // When/Then
+        mockMvc.perform(post("/api/v1/bookings/{id}/rebook", existingBooking.getId())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(existingBooking.getId()))
+                .andExpect(jsonPath("$.propertyId").value(PROPERTY_ID))
+                .andExpect(jsonPath("$.guestId").value(GUEST_ID))
+                .andExpect(jsonPath("$.dateRange.startDate").value(startDate.toString()))
+                .andExpect(jsonPath("$.dateRange.endDate").value(endDate.toString()))
+                .andExpect(jsonPath("$.status").value(BookingStatus.CONFIRMED.name()));
+    }
+
+    @Test
+    void rebookCancelledBooking_WhenNotCancelled_ReturnsBadRequest() throws Exception {
+        // Given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(3);
+        
+        Booking existingBooking = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CONFIRMED);
+        existingBooking = bookingRepository.save(existingBooking);
+
+        // When/Then
+        mockMvc.perform(post("/api/v1/bookings/{id}/rebook", existingBooking.getId())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(existingBooking.getId()))
+                .andExpect(jsonPath("$.status").value(BookingStatus.CONFIRMED.name()));
+    }
+
+    @Test
+    void rebookCancelledBooking_WhenOverlappingBooking_ReturnsBadRequest() throws Exception {
+        // Given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(3);
+        
+        // Create cancelled booking
+        Booking cancelledBooking = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CANCELLED);
+        cancelledBooking = bookingRepository.save(cancelledBooking);
+
+        // Create overlapping booking
+        Booking overlappingBooking = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(NEW_GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CONFIRMED);
+        overlappingBooking = bookingRepository.save(overlappingBooking);
+
+        // When/Then
+        mockMvc.perform(post("/api/v1/bookings/{id}/rebook", cancelledBooking.getId())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("The property is already booked for the selected dates"))
+                .andExpect(jsonPath("$.code").value("BOOKING_OVERLAP"))
+                .andExpect(jsonPath("$.params.ids[0]").value(overlappingBooking.getId()));
+    }
+
+    @Test
+    void updateBooking_WhenBookingIsCancelled_ReturnsBadRequest() throws Exception {
+        // Given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(3);
+        LocalDate newStartDate = LocalDate.now().plusDays(4);
+        LocalDate newEndDate = LocalDate.now().plusDays(6);
+        
+        Booking cancelledBooking = new Booking()
+                .setPropertyId(PROPERTY_ID)
+                .setGuestId(GUEST_ID)
+                .setStartDate(startDate)
+                .setEndDate(endDate)
+                .setStatus(BookingStatus.CANCELLED);
+        cancelledBooking = bookingRepository.save(cancelledBooking);
+
+        BookingUpdateRequest request = BookingUpdateRequest.builder()
+                .guestId(NEW_GUEST_ID)
+                .dateRange(new DateRange(newStartDate, newEndDate))
+                .build();
+
+        // When/Then
+        mockMvc.perform(put("/api/v1/bookings/{id}", cancelledBooking.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Cannot update cancelled booking"))
+                .andExpect(jsonPath("$.code").value("CANCELLED_BOOKING"))
+                .andExpect(jsonPath("$.params.id").value(cancelledBooking.getId()));
+    }
 } 

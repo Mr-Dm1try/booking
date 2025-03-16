@@ -36,4 +36,14 @@ public class BookingController {
     ) {
         return ResponseEntity.ok(bookingService.updateBooking(id, request));
     }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<BookingResponse> cancelBooking(@PathVariable("id") long id) {
+        return ResponseEntity.ok(bookingService.cancelBooking(id));
+    }
+
+    @PostMapping("/{id}/rebook")
+    public ResponseEntity<BookingResponse> rebookCancelledBooking(@PathVariable("id") long id) {
+        return ResponseEntity.ok(bookingService.rebookCancelledBooking(id));
+    }
 } 
