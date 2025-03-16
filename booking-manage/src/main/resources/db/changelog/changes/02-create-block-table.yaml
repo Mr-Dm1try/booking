@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2
+      author: booking
+      changes:
+        - createTable:
+            tableName: blocks
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: property_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_date
+                  type: date
+                  constraints:
+                    nullable: false 

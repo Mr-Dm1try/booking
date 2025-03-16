@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 3
+      author: booking
+      changes:
+        - createTable:
+            tableName: property_locks
+            columns:
+              - column:
+                  name: property_id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    nullable: false 

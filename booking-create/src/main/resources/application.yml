@@ -5,15 +5,18 @@ spring:
   application:
     name: booking-create
   datasource:
-    url: jdbc:h2:mem:bookingdb
-    username: sa
-    password: password
-    driverClassName: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/booking
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update
-  h2:
-    console:
-      enabled: true
-      path: /h2-console 
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect

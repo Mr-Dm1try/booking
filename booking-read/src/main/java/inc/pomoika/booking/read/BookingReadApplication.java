@@ -13,7 +13,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
     "inc.pomoika.booking.common.model"
 })
 @EnableJpaRepositories(basePackages = {
-    "inc.pomoika.booking.read.repository"
+    "inc.pomoika.booking.read.repository",
+    "inc.pomoika.booking.common.repository"
 })
 public class BookingReadApplication {
     public static void main(String[] args) {

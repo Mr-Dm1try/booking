@@ -1,0 +1,88 @@
+### Create a new booking (Create Service)
+POST http://localhost:8082/api/v1/bookings
+Content-Type: application/json
+
+{
+    "propertyId": 1,
+    "guestId": 2,
+    "dateRange": {
+        "startDate": "2024-03-20",
+        "endDate": "2024-03-25"
+    }
+}
+
+### Update a booking (Create Service)
+PUT http://localhost:8082/api/v1/bookings/1
+Content-Type: application/json
+
+{
+    "guestId": 3,
+    "dateRange": {
+        "startDate": "2024-03-26",
+        "endDate": "2024-03-30"
+    }
+}
+
+### Cancel a booking (Create Service)
+PUT http://localhost:8082/api/v1/bookings/1/cancel
+Content-Type: application/json
+
+### Rebook a cancelled booking (Create Service)
+PUT http://localhost:8082/api/v1/bookings/1/rebook
+Content-Type: application/json
+
+{
+    "guestId": 2,
+    "dateRange": {
+        "startDate": "2024-04-01",
+        "endDate": "2024-04-05"
+    }
+}
+
+### Delete a booking (Manage Service)
+DELETE http://localhost:8080/api/v1/bookings/1
+
+### Get a booking by ID (Read Service)
+GET http://localhost:8081/api/v1/bookings/1
+
+### Get bookings by property ID (Read Service)
+GET http://localhost:8081/api/v1/bookings/property/1
+
+### Get bookings by guest ID (Read Service)
+GET http://localhost:8081/api/v1/bookings/guest/2
+
+### Get overlapping bookings (Read Service)
+GET http://localhost:8081/api/v1/bookings/overlapping?propertyId=1&startDate=2024-03-20&endDate=2024-03-25&status=CONFIRMED
+
+### Get bookings by property ID and status (Read Service)
+GET http://localhost:8081/api/v1/bookings/property/1/status/CONFIRMED
+
+### Get bookings by guest ID and status (Read Service)
+GET http://localhost:8081/api/v1/bookings/guest/2/status/CONFIRMED
+
+### Create a block (Manage Service)
+POST http://localhost:8080/api/v1/blocks
+Content-Type: application/json
+
+{
+    "propertyId": 1,
+    "dateRange": {
+        "startDate": "2024-04-10",
+        "endDate": "2024-04-15"
+    }
+}
+
+### Update a block (Manage Service)
+PUT http://localhost:8080/api/v1/blocks/1
+Content-Type: application/json
+
+{
+    "propertyId": 1,
+    "dateRange": {
+        "startDate": "2024-04-16",
+        "endDate": "2024-04-20"
+    }
+}
+
+### Delete a block (Manage Service)
+DELETE http://localhost:8080/api/v1/blocks/1 

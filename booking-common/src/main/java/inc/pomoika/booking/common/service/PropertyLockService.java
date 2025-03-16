@@ -1,10 +1,8 @@
 package inc.pomoika.booking.common.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import inc.pomoika.booking.common.model.PropertyLock;
 import inc.pomoika.booking.common.repository.PropertyLockRepository;
